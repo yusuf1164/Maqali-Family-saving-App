@@ -18,7 +18,7 @@
     .field-row { display: flex; align-items: center; margin-bottom: 8px; }
     .field-label { width: 90px; font-size: 11px; font-weight: bold; }
     .field-input { flex: 1; background: #333366; color: #fff; border: none; border-radius: 4px; padding: 6px 8px; height: 34px; font-size: 12px; }
-    .field-input:disabled { opacity: 0.5; cursor: not-allowed; }
+    .field-input:disabled { opacity: 0.7; color: #ddd; background: #222244; cursor: not-allowed; }
     
     .shared-input-wrapper { flex: 1; display: flex; height: 34px; }
     .id-input-part { flex: 1; background: #333366; color: #fff; border: none; border-top-left-radius: 4px; border-bottom-left-radius: 4px; padding: 6px 8px; font-size: 12px; }
@@ -39,13 +39,13 @@
     .grid-cell { width: 18%; display: flex; flex-direction: column; align-items: center; margin-bottom: 6px; }
     .grid-label { font-size: 9px; color: #aaa; margin-bottom: 2px; }
     .grid-input { width: 100%; text-align: center; height: 28px; font-size: 10px; background: #333366; color: #fff; border: 1px solid #444; border-radius: 4px; }
-    .grid-input:disabled { opacity: 0.5; }
+    .grid-input:disabled { opacity: 0.7; color: #ddd; background: #222244; }
     
     .filter-row { display: flex; gap: 6px; margin-bottom: 12px; }
     .filter-btn { flex: 1; background: #222255; color: #aaa; border: 1px solid #444; border-radius: 4px; padding: 6px 0; font-size: 11px; font-weight: bold; cursor: pointer; }
     .filter-btn.active { background: #007AFF; color: #fff; border-color: #007AFF; }
     
-    .member-card { background: #000018; border: 1px solid #222255; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+    .member-card { background: #000018; border: 1px solid #222255; border-radius: 6px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
     .member-card-header { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #222244; padding-bottom: 4px; }
     .member-card-body { font-size: 11px; color: #ccc; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     
@@ -53,7 +53,7 @@
     .gen-label { font-size: 10px; color: #aaa; font-weight: bold; margin-bottom: 2px; }
     .gen-val { font-size: 16px; font-weight: bold; }
     
-    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; z-index: 100; }
     .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; }
     .tab-item.active { color: #007AFF; border-top: 2px solid #007AFF; background: #000030; }
     
@@ -77,7 +77,7 @@
     <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Editor Login</button>
   </div>
 
-  <div class="status-banner" id="statusBanner">STATUS: System Ready. Select an action.</div>
+  <div class="status-banner" id="statusBanner">STATUS: System Ready. Navigation enabled for all users.</div>
 
   <!-- TAB 1: PROFILE -->
   <div id="tab-Profile" class="tab-content active">
@@ -197,14 +197,14 @@
   <div class="modal-overlay" id="modalLogin">
     <div class="modal-box">
       <div class="modal-title">EDITOR LOGIN</div>
-      <div class="modal-subtitle">Only Editors (M001, M002, M003) can edit records</div>
+      <div class="modal-subtitle">Only Editors (M001, M002, M003) can make edits</div>
       <div class="field-row">
         <span class="field-label">Editor ID</span>
-        <input type="text" id="loginIdInput" class="field-input" placeholder="e.g. M001">
+        <input type="text" id="loginIdInput" class="field-input" placeholder="e.g. M001" style="background:#333366; color:#fff;">
       </div>
       <div class="field-row">
         <span class="field-label">Password</span>
-        <input type="password" id="loginPassInput" class="field-input" placeholder="Enter Password">
+        <input type="password" id="loginPassInput" class="field-input" placeholder="Enter Password" style="background:#333366; color:#fff;">
       </div>
       <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitLogin()">Login as Editor</button>
       <button class="link-btn" onclick="openResetModal()">Forgot Password?</button>
@@ -216,14 +216,14 @@
   <div class="modal-overlay" id="modalSetPassword">
     <div class="modal-box">
       <div class="modal-title" id="setPasswordTitle">CREATE EDITOR PASSWORD</div>
-      <div class="modal-subtitle" id="setPasswordSub">Set a secure password for your Editor ID</div>
+      <div class="modal-subtitle" id="setPasswordSub">Set a password for Editor access</div>
       <div class="field-row">
         <span class="field-label">Password</span>
-        <input type="password" id="newPassInput" class="field-input" placeholder="Create Password">
+        <input type="password" id="newPassInput" class="field-input" placeholder="Create Password" style="background:#333366; color:#fff;">
       </div>
       <div class="field-row">
         <span class="field-label">Verify</span>
-        <input type="password" id="verPassInput" class="field-input" placeholder="Confirm Password">
+        <input type="password" id="verPassInput" class="field-input" placeholder="Confirm Password" style="background:#333366; color:#fff;">
       </div>
       <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitNewPassword()">Save Password</button>
       <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
@@ -234,7 +234,7 @@
   <div class="modal-overlay" id="modalReset">
     <div class="modal-box">
       <div class="modal-title">RESET FORGOTTEN PASSWORD</div>
-      <div class="modal-subtitle">Enter your Editor ID to re-create password</div>
+      <div class="modal-subtitle">Type your Editor ID and tap Load</div>
       <div class="field-row">
         <span class="field-label">Editor ID</span>
         <div class="shared-input-wrapper">
@@ -246,11 +246,11 @@
       <div id="resetFields" style="display: none;">
         <div class="field-row">
           <span class="field-label">New Pass</span>
-          <input type="password" id="resetNewPass" class="field-input" placeholder="New Password">
+          <input type="password" id="resetNewPass" class="field-input" placeholder="New Password" style="background:#333366; color:#fff;">
         </div>
         <div class="field-row">
           <span class="field-label">Verify Pass</span>
-          <input type="password" id="resetVerPass" class="field-input" placeholder="Confirm Password">
+          <input type="password" id="resetVerPass" class="field-input" placeholder="Confirm Password" style="background:#333366; color:#fff;">
         </div>
         <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitResetPassword()">Update Password</button>
       </div>
@@ -258,7 +258,7 @@
     </div>
   </div>
 
-  <!-- NAVIGATION -->
+  <!-- NAVIGATION BAR (ALWAYS UNLOCKED) -->
   <div class="tab-bar">
     <div class="tab-item active" onclick="switchTab('Profile', this)">Profile</div>
     <div class="tab-item" onclick="switchTab('Weekly', this)">Weekly</div>
@@ -298,7 +298,7 @@
       if (isEditor) {
         isEditor = false;
         activeEditorId = "";
-        setStatus("Logged out. Switched to Viewer mode.");
+        setStatus("Logged out. Switched back to Viewer mode.");
         updatePermissionUI();
       } else {
         document.getElementById('loginIdInput').value = '';
@@ -318,7 +318,7 @@
 
       let found = members.find(m => m.id.toUpperCase() === id);
       if (!found || !found.password) {
-        alert(`No password configured for ${id}. Please register or save member details for ${id} first.`);
+        alert(`No password found for ${id}. Please tap 'Forgot Password?' to set up your password.`);
         return;
       }
 
@@ -326,7 +326,7 @@
         isEditor = true;
         activeEditorId = id;
         closeModals();
-        setStatus(`Welcome ${found.name} (${id})! Editor access granted.`);
+        setStatus(`Welcome ${found.name || id}! Editor access granted.`);
         updatePermissionUI();
       } else {
         alert("Incorrect password!");
@@ -350,22 +350,13 @@
 
       let found = members.find(m => m.id.toUpperCase() === id);
       if (found) {
-        document.getElementById('resetStatusMsg').innerText = `Editor Record Found: ${found.name}`;
-        document.getElementById('resetFields').style.display = 'block';
+        document.getElementById('resetStatusMsg').innerText = `Editor Profile Found: ${found.name}`;
       } else {
-        document.getElementById('resetStatusMsg').innerText = `No existing profile for ${id}. You can set a password now.`;
-        document.getElementById('resetFields').style.display = 'block';
+        document.getElementById('resetStatusMsg').innerText = `Editor ID ${id} verified. Set your new password below.`;
       }
+      document.getElementById('resetFields').style.display = 'block';
     }
 
     function submitResetPassword() {
       let id = document.getElementById('resetIdInput').value.trim().toUpperCase();
-      let newP = document.getElementById('resetNewPass').value;
-      let verP = document.getElementById('resetVerPass').value;
-
-      if (!newP || newP !== verP) {
-        alert("Passwords do not match or field is empty!");
-        return;
-      }
-
-      let foundIndex = members.findIndex(m => m.i
+      let newP = docum
