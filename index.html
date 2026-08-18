@@ -18,7 +18,7 @@
     .field-row { display: flex; align-items: center; margin-bottom: 8px; }
     .field-label { width: 90px; font-size: 11px; font-weight: bold; }
     .field-input { flex: 1; background: #333366; color: #fff; border: none; border-radius: 4px; padding: 6px 8px; height: 34px; font-size: 12px; }
-    .field-input:disabled { opacity: 0.7; color: #ddd; background: #222244; cursor: not-allowed; }
+    .field-input:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .shared-input-wrapper { flex: 1; display: flex; height: 34px; }
     .id-input-part { flex: 1; background: #333366; color: #fff; border: none; border-top-left-radius: 4px; border-bottom-left-radius: 4px; padding: 6px 8px; font-size: 12px; }
@@ -39,13 +39,13 @@
     .grid-cell { width: 18%; display: flex; flex-direction: column; align-items: center; margin-bottom: 6px; }
     .grid-label { font-size: 9px; color: #aaa; margin-bottom: 2px; }
     .grid-input { width: 100%; text-align: center; height: 28px; font-size: 10px; background: #333366; color: #fff; border: 1px solid #444; border-radius: 4px; }
-    .grid-input:disabled { opacity: 0.7; color: #ddd; background: #222244; }
+    .grid-input:disabled { opacity: 0.5; }
     
     .filter-row { display: flex; gap: 6px; margin-bottom: 12px; }
     .filter-btn { flex: 1; background: #222255; color: #aaa; border: 1px solid #444; border-radius: 4px; padding: 6px 0; font-size: 11px; font-weight: bold; cursor: pointer; }
     .filter-btn.active { background: #007AFF; color: #fff; border-color: #007AFF; }
     
-    .member-card { background: #000018; border: 1px solid #222255; border-radius: 6px; padding: 10px; margin-bottom: 8px; cursor: pointer; }
+    .member-card { background: #000018; border: 1px solid #222255; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
     .member-card-header { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #222244; padding-bottom: 4px; }
     .member-card-body { font-size: 11px; color: #ccc; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     
@@ -53,20 +53,12 @@
     .gen-label { font-size: 10px; color: #aaa; font-weight: bold; margin-bottom: 2px; }
     .gen-val { font-size: 16px; font-weight: bold; }
     
-    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; z-index: 100; }
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; }
     .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; }
     .tab-item.active { color: #007AFF; border-top: 2px solid #007AFF; background: #000030; }
     
     .tab-content { display: none; }
     .tab-content.active { display: block; }
-
-    /* MODAL STYLES */
-    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
-    .modal-overlay.active { display: flex; }
-    .modal-box { background: #000028; border: 1px solid #007AFF; border-radius: 8px; width: 100%; max-width: 340px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
-    .modal-title { font-size: 13px; font-weight: bold; color: #ffd700; margin-bottom: 12px; text-align: center; }
-    .modal-subtitle { font-size: 11px; color: #aaa; margin-bottom: 10px; text-align: center; }
-    .link-btn { background: none; border: none; color: #007AFF; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top: 8px; display: block; width: 100%; text-align: center; }
   </style>
 </head>
 <body>
@@ -74,10 +66,10 @@
   <!-- TOP AUTH BAR -->
   <div class="top-bar">
     <span class="role-badge" id="roleBadge">Role: Viewer (Read-Only)</span>
-    <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Editor Login</button>
+    <button class="login-btn" id="loginBtn" onclick="toggleAuth()">Editor Login</button>
   </div>
 
-  <div class="status-banner" id="statusBanner">STATUS: System Ready. Navigation enabled for all users.</div>
+  <div class="status-banner" id="statusBanner">STATUS: System Ready. Select an action.</div>
 
   <!-- TAB 1: PROFILE -->
   <div id="tab-Profile" class="tab-content active">
@@ -193,72 +185,7 @@
     </div>
   </div>
 
-  <!-- LOGIN MODAL -->
-  <div class="modal-overlay" id="modalLogin">
-    <div class="modal-box">
-      <div class="modal-title">EDITOR LOGIN</div>
-      <div class="modal-subtitle">Only Editors (M001, M002, M003) can make edits</div>
-      <div class="field-row">
-        <span class="field-label">Editor ID</span>
-        <input type="text" id="loginIdInput" class="field-input" placeholder="e.g. M001" style="background:#333366; color:#fff;">
-      </div>
-      <div class="field-row">
-        <span class="field-label">Password</span>
-        <input type="password" id="loginPassInput" class="field-input" placeholder="Enter Password" style="background:#333366; color:#fff;">
-      </div>
-      <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitLogin()">Login as Editor</button>
-      <button class="link-btn" onclick="openResetModal()">Forgot Password?</button>
-      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- SET PASSWORD MODAL -->
-  <div class="modal-overlay" id="modalSetPassword">
-    <div class="modal-box">
-      <div class="modal-title" id="setPasswordTitle">CREATE EDITOR PASSWORD</div>
-      <div class="modal-subtitle" id="setPasswordSub">Set a password for Editor access</div>
-      <div class="field-row">
-        <span class="field-label">Password</span>
-        <input type="password" id="newPassInput" class="field-input" placeholder="Create Password" style="background:#333366; color:#fff;">
-      </div>
-      <div class="field-row">
-        <span class="field-label">Verify</span>
-        <input type="password" id="verPassInput" class="field-input" placeholder="Confirm Password" style="background:#333366; color:#fff;">
-      </div>
-      <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitNewPassword()">Save Password</button>
-      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- RESET PASSWORD MODAL -->
-  <div class="modal-overlay" id="modalReset">
-    <div class="modal-box">
-      <div class="modal-title">RESET FORGOTTEN PASSWORD</div>
-      <div class="modal-subtitle">Type your Editor ID and tap Load</div>
-      <div class="field-row">
-        <span class="field-label">Editor ID</span>
-        <div class="shared-input-wrapper">
-          <input type="text" id="resetIdInput" class="id-input-part" placeholder="M001">
-          <button class="load-btn-part" onclick="verifyResetID()">Load</button>
-        </div>
-      </div>
-      <div id="resetStatusMsg" style="font-size: 11px; text-align: center; margin: 6px 0; color: #ffd700;"></div>
-      <div id="resetFields" style="display: none;">
-        <div class="field-row">
-          <span class="field-label">New Pass</span>
-          <input type="password" id="resetNewPass" class="field-input" placeholder="New Password" style="background:#333366; color:#fff;">
-        </div>
-        <div class="field-row">
-          <span class="field-label">Verify Pass</span>
-          <input type="password" id="resetVerPass" class="field-input" placeholder="Confirm Password" style="background:#333366; color:#fff;">
-        </div>
-        <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitResetPassword()">Update Password</button>
-      </div>
-      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
-    </div>
-  </div>
-
-  <!-- NAVIGATION BAR (ALWAYS UNLOCKED) -->
+  <!-- NAVIGATION -->
   <div class="tab-bar">
     <div class="tab-item active" onclick="switchTab('Profile', this)">Profile</div>
     <div class="tab-item" onclick="switchTab('Weekly', this)">Weekly</div>
@@ -269,13 +196,11 @@
 
   <script>
     // System State
-    const EDITOR_IDS = ["M001", "M002", "M003"];
     let members = [];
     let currentWeeklyPayments = new Array(50).fill('');
     let statusTimer = null;
     let isEditor = false;
-    let activeEditorId = "";
-    let pendingMemberSave = null;
+    const EDITOR_PIN = "1234"; // Default editor PIN
     let activeFilter = 'All';
 
     // Build 50-Week Grid
@@ -289,74 +214,186 @@
       `;
     }
 
-    // Modal Control
-    function closeModals() {
-      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
-    }
-
-    function openLoginModal() {
+    // Auth & Permission Management
+    function toggleAuth() {
       if (isEditor) {
         isEditor = false;
-        activeEditorId = "";
-        setStatus("Logged out. Switched back to Viewer mode.");
-        updatePermissionUI();
+        setStatus("Logged out. Switched to Viewer mode.");
       } else {
-        document.getElementById('loginIdInput').value = '';
-        document.getElementById('loginPassInput').value = '';
-        document.getElementById('modalLogin').classList.add('active');
+        let pin = prompt("Enter Editor Access PIN:");
+        if (pin === EDITOR_PIN) {
+          isEditor = true;
+          setStatus("Access granted! Editor mode active.");
+        } else if (pin !== null) {
+          setStatus("Incorrect PIN! Access denied.");
+        }
       }
+      updatePermissionUI();
     }
 
-    function submitLogin() {
-      let id = document.getElementById('loginIdInput').value.trim().toUpperCase();
-      let pass = document.getElementById('loginPassInput').value;
+    function updatePermissionUI() {
+      document.getElementById('roleBadge').innerText = isEditor ? "Role: Editor (Full Access)" : "Role: Viewer (Read-Only)";
+      document.getElementById('roleBadge').style.background = isEditor ? "#28a745" : "#333366";
+      document.getElementById('loginBtn').innerText = isEditor ? "Logout" : "Editor Login";
 
-      if (!EDITOR_IDS.includes(id)) {
-        alert("Access Denied: Only M001, M002, and M003 are authorized Editor IDs.");
+      document.querySelectorAll('.editor-only').forEach(el => {
+        if (el.tagName === 'BUTTON') {
+          el.disabled = !isEditor;
+        } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+          el.disabled = !isEditor;
+        }
+      });
+    }
+
+    // Auto-clearing Status Banner (5 seconds)
+    function setStatus(msg) {
+      const banner = document.getElementById('statusBanner');
+      banner.innerText = "STATUS: " + msg;
+      
+      if (statusTimer) clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => {
+        banner.innerText = "STATUS: System Ready. Select an action.";
+      }, 5000);
+    }
+
+    function switchTab(tabName, element) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      element.classList.add('active');
+      
+      if (tabName === 'Members') renderMembersTab();
+      if (tabName === 'Summary') updateGeneralSummary();
+    }
+
+    function updateGridArray(index, value) {
+      currentWeeklyPayments[index] = value;
+    }
+
+    function handleNewID() {
+      if (!isEditor) return;
+      let maxId = 0;
+      members.forEach(m => {
+        if (m.id.toUpperCase().startsWith('M')) {
+          let num = parseInt(m.id.substring(1), 10);
+          if (!isNaN(num) && num > maxId) maxId = num;
+        }
+      });
+      let formattedId = `M${String(maxId + 1).padStart(3, '0')}`;
+      clearForm();
+      document.getElementById('memberId').value = formattedId;
+      setStatus(`New ID ${formattedId} generated! Enter details and click Save Member.`);
+    }
+
+    function handleSaveMember() {
+      if (!isEditor) return;
+      let id = document.getElementById('memberId').value.trim();
+      let name = document.getElementById('name').value.trim();
+
+      if (!id || !name) {
+        setStatus("Error: Please provide both Member ID and Name!");
         return;
       }
 
-      let found = members.find(m => m.id.toUpperCase() === id);
-      if (!found || !found.password) {
-        alert(`No password found for ${id}. Please tap 'Forgot Password?' to set up your password.`);
-        return;
-      }
+      let existingIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+      let memberData = {
+        id: id,
+        name: name,
+        age: document.getElementById('age').value,
+        phone: document.getElementById('phone').value,
+        familyTies: document.getElementById('familyTies').value,
+        status: document.getElementById('status').value || 'Active',
+        loanAmount: existingIndex >= 0 ? members[existingIndex].loanAmount : 0,
+        loanPaid: existingIndex >= 0 ? members[existingIndex].loanPaid : 0,
+        weeklyPayments: existingIndex >= 0 ? members[existingIndex].weeklyPayments : [...currentWeeklyPayments]
+      };
 
-      if (found.password === pass) {
-        isEditor = true;
-        activeEditorId = id;
-        closeModals();
-        setStatus(`Welcome ${found.name || id}! Editor access granted.`);
-        updatePermissionUI();
+      if (existingIndex >= 0) {
+        members[existingIndex] = memberData;
       } else {
-        alert("Incorrect password!");
-      }
-    }
-
-    function openResetModal() {
-      closeModals();
-      document.getElementById('resetIdInput').value = '';
-      document.getElementById('resetStatusMsg').innerText = '';
-      document.getElementById('resetFields').style.display = 'none';
-      document.getElementById('modalReset').classList.add('active');
-    }
-
-    function verifyResetID() {
-      let id = document.getElementById('resetIdInput').value.trim().toUpperCase();
-      if (!EDITOR_IDS.includes(id)) {
-        document.getElementById('resetStatusMsg').innerText = "Error: ID must be M001, M002, or M003.";
-        return;
+        members.push(memberData);
       }
 
-      let found = members.find(m => m.id.toUpperCase() === id);
+      setStatus(`Member ${name} (${id}) saved successfully!`);
+      clearForm(); // Clear fields after saving
+    }
+
+    function handleLoadMember(targetId) {
+      let id = targetId || document.getElementById('memberId').value.trim();
+      let found = members.find(m => m.id.toUpperCase() === id.toUpperCase());
+
       if (found) {
-        document.getElementById('resetStatusMsg').innerText = `Editor Profile Found: ${found.name}`;
+        document.getElementById('memberId').value = found.id;
+        document.getElementById('weeklyMemberId').value = found.id;
+        document.getElementById('loansMemberId').value = found.id;
+
+        document.getElementById('name').value = found.name;
+        document.getElementById('age').value = found.age;
+        document.getElementById('phone').value = found.phone;
+        document.getElementById('familyTies').value = found.familyTies;
+        document.getElementById('status').value = found.status;
+
+        currentWeeklyPayments = [...found.weeklyPayments];
+        for (let i = 0; i < 50; i++) {
+          document.getElementById(`wkInput_${i}`).value = currentWeeklyPayments[i] || '';
+        }
+
+        document.getElementById('weeklyActiveBadge').style.display = 'block';
+        document.getElementById('weeklyActiveBadge').innerText = "Active: " + found.name;
+        document.getElementById('loansActiveBadge').style.display = 'block';
+        document.getElementById('loansActiveBadge').innerText = "Member: " + found.name;
+
+        updateIndividualSummary(found);
+        setStatus(`Profile loaded for ${found.name}`);
       } else {
-        document.getElementById('resetStatusMsg').innerText = `Editor ID ${id} verified. Set your new password below.`;
+        setStatus(`No member recorded with ID: ${id}`);
       }
-      document.getElementById('resetFields').style.display = 'block';
     }
 
-    function submitResetPassword() {
-      let id = document.getElementById('resetIdInput').value.trim().toUpperCase();
-      let newP = docum
+    function handleSavePayments() {
+      if (!isEditor) return;
+      let id = document.getElementById('weeklyMemberId').value.trim();
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0) {
+        setStatus("Error: Member ID not found. Register member first!");
+        return;
+      }
+
+      members[foundIndex].weeklyPayments = [...currentWeeklyPayments];
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`Weekly contributions saved for ${members[foundIndex].name}!`);
+    }
+
+    function handleAddLoan() {
+      if (!isEditor) return;
+      let id = document.getElementById('loansMemberId').value.trim();
+      let amount = parseFloat(document.getElementById('newLoanInput').value);
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0 || isNaN(amount) || amount <= 0) {
+        setStatus("Error: Select a valid member and enter a valid loan amount!");
+        return;
+      }
+
+      members[foundIndex].loanAmount += amount;
+      document.getElementById('newLoanInput').value = '';
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`₦${amount.toLocaleString()} added to loan balance!`);
+    }
+
+    function handlePayLoan() {
+      if (!isEditor) return;
+      let id = document.getElementById('loansMemberId').value.trim();
+      let payment = parseFloat(document.getElementById('payLoanInput').value);
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0 || isNaN(payment) || payment <= 0) {
+        setStatus("Error: Select a valid member and enter a valid repayment amount!");
+        return;
+      }
+
+      members[foundIndex].loanPaid += payment;
+      document.getElementById('payLoanInput').value = '';
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`₦${payment.toLocaleString()} recorded
