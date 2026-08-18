@@ -59,6 +59,14 @@
     
     .tab-content { display: none; }
     .tab-content.active { display: block; }
+
+    /* MODAL STYLES */
+    .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.85); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 15px; }
+    .modal-overlay.active { display: flex; }
+    .modal-box { background: #000028; border: 1px solid #007AFF; border-radius: 8px; width: 100%; max-width: 340px; padding: 16px; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+    .modal-title { font-size: 13px; font-weight: bold; color: #ffd700; margin-bottom: 12px; text-align: center; }
+    .modal-subtitle { font-size: 11px; color: #aaa; margin-bottom: 10px; text-align: center; }
+    .link-btn { background: none; border: none; color: #007AFF; font-size: 11px; text-decoration: underline; cursor: pointer; margin-top: 8px; display: block; width: 100%; text-align: center; }
   </style>
 </head>
 <body>
@@ -66,7 +74,7 @@
   <!-- TOP AUTH BAR -->
   <div class="top-bar">
     <span class="role-badge" id="roleBadge">Role: Viewer (Read-Only)</span>
-    <button class="login-btn" id="loginBtn" onclick="toggleAuth()">Editor Login</button>
+    <button class="login-btn" id="loginBtn" onclick="openLoginModal()">Editor Login</button>
   </div>
 
   <div class="status-banner" id="statusBanner">STATUS: System Ready. Select an action.</div>
@@ -185,6 +193,71 @@
     </div>
   </div>
 
+  <!-- LOGIN MODAL -->
+  <div class="modal-overlay" id="modalLogin">
+    <div class="modal-box">
+      <div class="modal-title">EDITOR LOGIN</div>
+      <div class="modal-subtitle">Only Editors (M001, M002, M003) can edit records</div>
+      <div class="field-row">
+        <span class="field-label">Editor ID</span>
+        <input type="text" id="loginIdInput" class="field-input" placeholder="e.g. M001">
+      </div>
+      <div class="field-row">
+        <span class="field-label">Password</span>
+        <input type="password" id="loginPassInput" class="field-input" placeholder="Enter Password">
+      </div>
+      <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitLogin()">Login as Editor</button>
+      <button class="link-btn" onclick="openResetModal()">Forgot Password?</button>
+      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- SET PASSWORD MODAL -->
+  <div class="modal-overlay" id="modalSetPassword">
+    <div class="modal-box">
+      <div class="modal-title" id="setPasswordTitle">CREATE EDITOR PASSWORD</div>
+      <div class="modal-subtitle" id="setPasswordSub">Set a secure password for your Editor ID</div>
+      <div class="field-row">
+        <span class="field-label">Password</span>
+        <input type="password" id="newPassInput" class="field-input" placeholder="Create Password">
+      </div>
+      <div class="field-row">
+        <span class="field-label">Verify</span>
+        <input type="password" id="verPassInput" class="field-input" placeholder="Confirm Password">
+      </div>
+      <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitNewPassword()">Save Password</button>
+      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- RESET PASSWORD MODAL -->
+  <div class="modal-overlay" id="modalReset">
+    <div class="modal-box">
+      <div class="modal-title">RESET FORGOTTEN PASSWORD</div>
+      <div class="modal-subtitle">Enter your Editor ID to re-create password</div>
+      <div class="field-row">
+        <span class="field-label">Editor ID</span>
+        <div class="shared-input-wrapper">
+          <input type="text" id="resetIdInput" class="id-input-part" placeholder="M001">
+          <button class="load-btn-part" onclick="verifyResetID()">Load</button>
+        </div>
+      </div>
+      <div id="resetStatusMsg" style="font-size: 11px; text-align: center; margin: 6px 0; color: #ffd700;"></div>
+      <div id="resetFields" style="display: none;">
+        <div class="field-row">
+          <span class="field-label">New Pass</span>
+          <input type="password" id="resetNewPass" class="field-input" placeholder="New Password">
+        </div>
+        <div class="field-row">
+          <span class="field-label">Verify Pass</span>
+          <input type="password" id="resetVerPass" class="field-input" placeholder="Confirm Password">
+        </div>
+        <button class="action-btn save-btn" style="width: 100%; margin-top: 8px;" onclick="submitResetPassword()">Update Password</button>
+      </div>
+      <button class="action-btn" style="width: 100%; margin-top: 8px; background: #555;" onclick="closeModals()">Cancel</button>
+    </div>
+  </div>
+
   <!-- NAVIGATION -->
   <div class="tab-bar">
     <div class="tab-item active" onclick="switchTab('Profile', this)">Profile</div>
@@ -196,11 +269,13 @@
 
   <script>
     // System State
+    const EDITOR_IDS = ["M001", "M002", "M003"];
     let members = [];
     let currentWeeklyPayments = new Array(50).fill('');
     let statusTimer = null;
     let isEditor = false;
-    const EDITOR_PIN = "1234"; // Default editor PIN
+    let activeEditorId = "";
+    let pendingMemberSave = null;
     let activeFilter = 'All';
 
     // Build 50-Week Grid
@@ -214,293 +289,83 @@
       `;
     }
 
-    // Auth & Permission Management
-    function toggleAuth() {
+    // Modal Control
+    function closeModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.classList.remove('active'));
+    }
+
+    function openLoginModal() {
       if (isEditor) {
         isEditor = false;
+        activeEditorId = "";
         setStatus("Logged out. Switched to Viewer mode.");
+        updatePermissionUI();
       } else {
-        let pin = prompt("Enter Editor Access PIN:");
-        if (pin === EDITOR_PIN) {
-          isEditor = true;
-          setStatus("Access granted! Editor mode active.");
-        } else if (pin !== null) {
-          setStatus("Incorrect PIN! Access denied.");
-        }
+        document.getElementById('loginIdInput').value = '';
+        document.getElementById('loginPassInput').value = '';
+        document.getElementById('modalLogin').classList.add('active');
       }
-      updatePermissionUI();
     }
 
-    function updatePermissionUI() {
-      document.getElementById('roleBadge').innerText = isEditor ? "Role: Editor (Full Access)" : "Role: Viewer (Read-Only)";
-      document.getElementById('roleBadge').style.background = isEditor ? "#28a745" : "#333366";
-      document.getElementById('loginBtn').innerText = isEditor ? "Logout" : "Editor Login";
+    function submitLogin() {
+      let id = document.getElementById('loginIdInput').value.trim().toUpperCase();
+      let pass = document.getElementById('loginPassInput').value;
 
-      document.querySelectorAll('.editor-only').forEach(el => {
-        if (el.tagName === 'BUTTON') {
-          el.disabled = !isEditor;
-        } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
-          el.disabled = !isEditor;
-        }
-      });
-    }
-
-    // Auto-clearing Status Banner (5 seconds)
-    function setStatus(msg) {
-      const banner = document.getElementById('statusBanner');
-      banner.innerText = "STATUS: " + msg;
-      
-      if (statusTimer) clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => {
-        banner.innerText = "STATUS: System Ready. Select an action.";
-      }, 5000);
-    }
-
-    function switchTab(tabName, element) {
-      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
-      document.getElementById('tab-' + tabName).classList.add('active');
-      element.classList.add('active');
-      
-      if (tabName === 'Members') renderMembersTab();
-      if (tabName === 'Summary') updateGeneralSummary();
-    }
-
-    function updateGridArray(index, value) {
-      currentWeeklyPayments[index] = value;
-    }
-
-    function handleNewID() {
-      if (!isEditor) return;
-      let maxId = 0;
-      members.forEach(m => {
-        if (m.id.toUpperCase().startsWith('M')) {
-          let num = parseInt(m.id.substring(1), 10);
-          if (!isNaN(num) && num > maxId) maxId = num;
-        }
-      });
-      let formattedId = `M${String(maxId + 1).padStart(3, '0')}`;
-      clearForm();
-      document.getElementById('memberId').value = formattedId;
-      setStatus(`New ID ${formattedId} generated! Enter details and click Save Member.`);
-    }
-
-    function handleSaveMember() {
-      if (!isEditor) return;
-      let id = document.getElementById('memberId').value.trim();
-      let name = document.getElementById('name').value.trim();
-
-      if (!id || !name) {
-        setStatus("Error: Please provide both Member ID and Name!");
+      if (!EDITOR_IDS.includes(id)) {
+        alert("Access Denied: Only M001, M002, and M003 are authorized Editor IDs.");
         return;
       }
 
-      let existingIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
-      let memberData = {
-        id: id,
-        name: name,
-        age: document.getElementById('age').value,
-        phone: document.getElementById('phone').value,
-        familyTies: document.getElementById('familyTies').value,
-        status: document.getElementById('status').value || 'Active',
-        loanAmount: existingIndex >= 0 ? members[existingIndex].loanAmount : 0,
-        loanPaid: existingIndex >= 0 ? members[existingIndex].loanPaid : 0,
-        weeklyPayments: existingIndex >= 0 ? members[existingIndex].weeklyPayments : [...currentWeeklyPayments]
-      };
-
-      if (existingIndex >= 0) {
-        members[existingIndex] = memberData;
-      } else {
-        members.push(memberData);
+      let found = members.find(m => m.id.toUpperCase() === id);
+      if (!found || !found.password) {
+        alert(`No password configured for ${id}. Please register or save member details for ${id} first.`);
+        return;
       }
 
-      setStatus(`Member ${name} (${id}) saved successfully!`);
-      clearForm(); // Clear fields after saving
+      if (found.password === pass) {
+        isEditor = true;
+        activeEditorId = id;
+        closeModals();
+        setStatus(`Welcome ${found.name} (${id})! Editor access granted.`);
+        updatePermissionUI();
+      } else {
+        alert("Incorrect password!");
+      }
     }
 
-    function handleLoadMember(targetId) {
-      let id = targetId || document.getElementById('memberId').value.trim();
-      let found = members.find(m => m.id.toUpperCase() === id.toUpperCase());
+    function openResetModal() {
+      closeModals();
+      document.getElementById('resetIdInput').value = '';
+      document.getElementById('resetStatusMsg').innerText = '';
+      document.getElementById('resetFields').style.display = 'none';
+      document.getElementById('modalReset').classList.add('active');
+    }
 
+    function verifyResetID() {
+      let id = document.getElementById('resetIdInput').value.trim().toUpperCase();
+      if (!EDITOR_IDS.includes(id)) {
+        document.getElementById('resetStatusMsg').innerText = "Error: ID must be M001, M002, or M003.";
+        return;
+      }
+
+      let found = members.find(m => m.id.toUpperCase() === id);
       if (found) {
-        document.getElementById('memberId').value = found.id;
-        document.getElementById('weeklyMemberId').value = found.id;
-        document.getElementById('loansMemberId').value = found.id;
-
-        document.getElementById('name').value = found.name;
-        document.getElementById('age').value = found.age;
-        document.getElementById('phone').value = found.phone;
-        document.getElementById('familyTies').value = found.familyTies;
-        document.getElementById('status').value = found.status;
-
-        currentWeeklyPayments = [...found.weeklyPayments];
-        for (let i = 0; i < 50; i++) {
-          document.getElementById(`wkInput_${i}`).value = currentWeeklyPayments[i] || '';
-        }
-
-        document.getElementById('weeklyActiveBadge').style.display = 'block';
-        document.getElementById('weeklyActiveBadge').innerText = "Active: " + found.name;
-        document.getElementById('loansActiveBadge').style.display = 'block';
-        document.getElementById('loansActiveBadge').innerText = "Member: " + found.name;
-
-        updateIndividualSummary(found);
-        setStatus(`Profile loaded for ${found.name}`);
+        document.getElementById('resetStatusMsg').innerText = `Editor Record Found: ${found.name}`;
+        document.getElementById('resetFields').style.display = 'block';
       } else {
-        setStatus(`No member recorded with ID: ${id}`);
+        document.getElementById('resetStatusMsg').innerText = `No existing profile for ${id}. You can set a password now.`;
+        document.getElementById('resetFields').style.display = 'block';
       }
     }
 
-    function handleSavePayments() {
-      if (!isEditor) return;
-      let id = document.getElementById('weeklyMemberId').value.trim();
-      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+    function submitResetPassword() {
+      let id = document.getElementById('resetIdInput').value.trim().toUpperCase();
+      let newP = document.getElementById('resetNewPass').value;
+      let verP = document.getElementById('resetVerPass').value;
 
-      if (foundIndex < 0) {
-        setStatus("Error: Member ID not found. Register member first!");
+      if (!newP || newP !== verP) {
+        alert("Passwords do not match or field is empty!");
         return;
       }
 
-      members[foundIndex].weeklyPayments = [...currentWeeklyPayments];
-      updateIndividualSummary(members[foundIndex]);
-      setStatus(`Weekly contributions saved for ${members[foundIndex].name}!`);
-    }
-
-    function handleAddLoan() {
-      if (!isEditor) return;
-      let id = document.getElementById('loansMemberId').value.trim();
-      let amount = parseFloat(document.getElementById('newLoanInput').value);
-      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
-
-      if (foundIndex < 0 || isNaN(amount) || amount <= 0) {
-        setStatus("Error: Select a valid member and enter a valid loan amount!");
-        return;
-      }
-
-      members[foundIndex].loanAmount += amount;
-      document.getElementById('newLoanInput').value = '';
-      updateIndividualSummary(members[foundIndex]);
-      setStatus(`₦${amount.toLocaleString()} added to loan balance!`);
-    }
-
-    function handlePayLoan() {
-      if (!isEditor) return;
-      let id = document.getElementById('loansMemberId').value.trim();
-      let payment = parseFloat(document.getElementById('payLoanInput').value);
-      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
-
-      if (foundIndex < 0 || isNaN(payment) || payment <= 0) {
-        setStatus("Error: Select a valid member and enter a valid repayment amount!");
-        return;
-      }
-
-      members[foundIndex].loanPaid += payment;
-      document.getElementById('payLoanInput').value = '';
-      updateIndividualSummary(members[foundIndex]);
-      setStatus(`₦${payment.toLocaleString()} recorded as loan payment!`);
-    }
-
-    function updateIndividualSummary(m) {
-      let saved = m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
-      let weeks = m.weeklyPayments.filter(v => parseFloat(v) > 0).length;
-      let loanBal = m.loanAmount - m.loanPaid;
-      let net = saved - loanBal;
-
-      document.getElementById('profWeeksPaid').innerText = weeks;
-      document.getElementById('profAmountSaved').innerText = "₦" + saved.toLocaleString();
-      document.getElementById('profLoanAmount').innerText = "₦" + m.loanAmount.toLocaleString();
-      document.getElementById('profLoanPaid').innerText = "₦" + m.loanPaid.toLocaleString();
-      document.getElementById('profLoanBalance').innerText = "₦" + loanBal.toLocaleString();
-      document.getElementById('profNetBalance').innerText = "₦" + net.toLocaleString();
-
-      document.getElementById('loanTotalVal').innerText = "₦" + m.loanAmount.toLocaleString();
-      document.getElementById('loanPaidVal').innerText = "₦" + m.loanPaid.toLocaleString();
-      document.getElementById('loanBalVal').innerText = "₦" + loanBal.toLocaleString();
-    }
-
-    function setMemberFilter(filter) {
-      activeFilter = filter;
-      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-      document.getElementById('filter' + filter).classList.add('active');
-      renderMembersTab();
-    }
-
-    function renderMembersTab() {
-      let container = document.getElementById('membersListContainer');
-      let filtered = members.filter(m => {
-        if (activeFilter === 'Active') return m.status === 'Active';
-        if (activeFilter === 'Inactive') return m.status === 'Inactive';
-        return true;
-      });
-
-      if (filtered.length === 0) {
-        container.innerHTML = `<div style="text-align: center; color: #888; padding: 20px 0; font-size: 12px;">No members found under standard '${activeFilter}' filter.</div>`;
-        return;
-      }
-
-      container.innerHTML = filtered.map(m => {
-        let saved = m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
-        let loanBal = m.loanAmount - m.loanPaid;
-        let statusColor = m.status === 'Active' ? '#51cf66' : '#ff6b6b';
-
-        return `
-          <div class="member-card" onclick="selectMemberFromList('${m.id}')">
-            <div class="member-card-header">
-              <span style="color: #ffd700; font-weight: bold;">${m.id} - ${m.name}</span>
-              <span style="color: ${statusColor}; font-weight: bold; font-size: 10px;">${m.status}</span>
-            </div>
-            <div class="member-card-body">
-              <div>Phone: ${m.phone || 'N/A'}</div>
-              <div>Ties: ${m.familyTies || 'N/A'}</div>
-              <div>Saved: <b style="color: #51cf66;">₦${saved.toLocaleString()}</b></div>
-              <div>Loan Bal: <b style="color: #ff6b6b;">₦${loanBal.toLocaleString()}</b></div>
-            </div>
-          </div>
-        `;
-      }).join('');
-    }
-
-    function selectMemberFromList(id) {
-      handleLoadMember(id);
-      switchTab('Profile', document.querySelectorAll('.tab-item')[0]);
-    }
-
-    function updateGeneralSummary() {
-      let totalSaved = 0, totalLoans = 0, totalPaid = 0;
-
-      members.forEach(m => {
-        totalSaved += m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
-        totalLoans += m.loanAmount;
-        totalPaid += m.loanPaid;
-      });
-
-      let totalLoanBal = totalLoans - totalPaid;
-      let grandNet = totalSaved - totalLoanBal;
-
-      document.getElementById('sumTotalSaved').innerText = "₦" + totalSaved.toLocaleString();
-      document.getElementById('sumTotalLoans').innerText = "₦" + totalLoans.toLocaleString();
-      document.getElementById('sumTotalRepaid').innerText = "₦" + totalPaid.toLocaleString();
-      document.getElementById('sumTotalLoanBal').innerText = "₦" + totalLoanBal.toLocaleString();
-      document.getElementById('sumGrandNet').innerText = "₦" + grandNet.toLocaleString();
-      document.getElementById('sumTotalMembers').innerText = members.length;
-    }
-
-    function clearForm() {
-      document.getElementById('memberId').value = '';
-      document.getElementById('name').value = '';
-      document.getElementById('age').value = '';
-      document.getElementById('phone').value = '';
-      document.getElementById('familyTies').value = '';
-      document.getElementById('status').value = 'Active';
-      currentWeeklyPayments = new Array(50).fill('');
-      for (let i = 0; i < 50; i++) {
-        document.getElementById(`wkInput_${i}`).value = '';
-      }
-      document.getElementById('weeklyActiveBadge').style.display = 'none';
-      document.getElementById('loansActiveBadge').style.display = 'none';
-    }
-
-    // Initialize Permissions on Load
-    updatePermissionUI();
-  </script>
-</body>
-</html>
+      let foundIndex = members.findIndex(m => m.i
