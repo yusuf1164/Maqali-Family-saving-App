@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MAQALI FAMILY MEETING</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: #000040; color: #fff; padding: 10px; padding-bottom: 70px; }
+    
+    .status-banner { background: #111155; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #333; text-align: center; color: #ffd700; font-size: 11px; font-weight: bold; }
+    .card { background: #000028; border-radius: 8px; padding: 12px; border: 1px solid #333; }
+    
+    .field-row { display: flex; align-items: center; margin-bottom: 8px; }
+    .field-label { width: 90px; font-size: 11px; font-weight: bold; }
+    .field-input { flex: 1; background: #333366; color: #fff; border: none; border-radius: 4px; padding: 6px 8px; height: 34px; font-size: 12px; }
+    
+    .shared-input-wrapper { flex: 1; display: flex; height: 34px; }
+    .id-input-part { flex: 1; background: #333366; color: #fff; border: none; border-top-left-radius: 4px; border-bottom-left-radius: 4px; padding: 6px 8px; font-size: 12px; }
+    .load-btn-part { width: 60px; background: #007AFF; color: #fff; border: none; border-top-right-radius: 4px; border-bottom-right-radius: 4px; font-weight: bold; font-size: 11px; cursor: pointer; }
+    
+    .btn-row { display: flex; gap: 8px; margin: 10px 0; }
+    .action-btn { flex: 1; background: #007AFF; color: #fff; border: none; border-radius: 4px; height: 34px; font-weight: bold; font-size: 11px; cursor: pointer; }
+    .save-btn { background: #28a745; }
+    
+    .summary-box { background: #000015; border-radius: 6px; padding: 10px; margin-top: 8px; }
+    .summary-row { display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px; }
+    .summary-val { font-weight: bold; }
+    
+    .active-badge { background: #1a1a4f; padding: 6px; border-radius: 4px; margin-bottom: 10px; text-align: center; color: #51cf66; font-weight: bold; font-size: 12px; }
+    
+    .grid-container { display: flex; flex-wrap: wrap; gap: 4px; justify-content: space-between; margin-top: 10px; }
+    .grid-cell { width: 18%; display: flex; flex-direction: column; align-items: center; margin-bottom: 6px; }
+    .grid-label { font-size: 9px; color: #aaa; margin-bottom: 2px; }
+    .grid-input { width: 100%; text-align: center; height: 28px; font-size: 10px; background: #333366; color: #fff; border: 1px solid #444; border-radius: 4px; }
+    
+    .member-item { display: flex; justify-content: space-between; background: #111144; padding: 8px; border-radius: 4px; margin-bottom: 4px; font-size: 11px; cursor: pointer; }
+    
+    .gen-box { background: #000010; border-radius: 4px; padding: 10px; margin-bottom: 8px; text-align: center; }
+    .gen-label { font-size: 10px; color: #aaa; font-weight: bold; margin-bottom: 2px; }
+    .gen-val { font-size: 16px; font-weight: bold; }
+    
+    .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; }
+    .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #888; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .tab-item.active { color: #007AFF; border-top: 2px solid #007AFF; background: #000030; }
+    
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <div class="status-banner" id="statusBanner">STATUS: System Ready. Select an action.</div>
+
+  <!-- TAB 1: PROFILE -->
+  <div id="tab-Profile" class="tab-content active">
+    <div class="card">
+      <div class="field-row">
+        <span class="field-label">Member ID</span>
+        <div class="shared-input-wrapper">
+          <input type="text" id="memberId" class="id-input-part" placeholder="M001">
+          <button class="load-btn-part" onclick="handleLoadMember()">Load</button>
+        </div>
+      </div>
+      <div class="field-row"><span class="field-label">Name</span><input type="text" id="name" class="field-input" placeholder="Full Name"></div>
+      <div class="field-row"><span class="field-label">Age</span><input type="number" id="age" class="field-input" placeholder="Age"></div>
+      <div class="field-row"><span class="field-label">Phone</span><input type="tel" id="phone" class="field-input" placeholder="Phone"></div>
+      <div class="field-row"><span class="field-label">Family Ties</span><input type="text" id="familyTies" class="field-input" placeholder="Ties"></div>
+      <div class="field-row"><span class="field-label">Status</span><input type="text" id="status" class="field-input" placeholder="Active/Inactive"></div>
+
+      <div class="btn-row">
+        <button class="action-btn" onclick="handleNewID()">New ID</button>
+        <button class="action-btn save-btn" onclick="handleSaveMember()">Save Member</button>
+      </div>
+
+      <div class="summary-box">
+        <div class="summary-row"><span>Weeks Paid:</span><span id="profWeeksPaid" class="summary-val">0</span></div>
+        <div class="summary-row"><span>Amount Saved:</span><span id="profAmountSaved" class="summary-val">₦0</span></div>
+        <div class="summary-row"><span>Loan Amount:</span><span id="profLoanAmount" class="summary-val">₦0</span></div>
+        <div class="summary-row"><span>Loan Paid:</span><span id="profLoanPaid" class="summary-val">₦0</span></div>
+        <div class="summary-row"><span>Loan Balance:</span><span id="profLoanBalance" class="summary-val" style="color: #ff6b6b;">₦0</span></div>
+        <div class="summary-row"><span>Net Balance:</span><span id="profNetBalance" class="summary-val" style="color: #51cf66;">₦0</span></div>
+      </div>
+
+      <div style="margin-top: 15px;" id="memberListContainer"></div>
+    </div>
+  </div>
+
+  <!-- TAB 2: WEEKLY -->
+  <div id="tab-Weekly" class="tab-content">
+    <div class="card">
+      <div class="field-row">
+        <span class="field-label">Member ID</span>
+        <div class="shared-input-wrapper">
+          <input type="text" id="weeklyMemberId" class="id-input-part" placeholder="M001">
+          <button class="load-btn-part" onclick="handleLoadMember(document.getElementById('weeklyMemberId').value)">Load</button>
+        </div>
+      </div>
+      <div id="weeklyActiveBadge" class="active-badge" style="display: none;"></div>
+      <div class="grid-container" id="grid50"></div>
+      <button class="action-btn save-btn" style="width: 100%; margin-top: 12px;" onclick="handleSavePayments()">Save Payments</button>
+    </div>
+  </div>
+
+  <!-- TAB 3: LOANS -->
+  <div id="tab-Loans" class="tab-content">
+    <div class="card">
+      <div class="field-row">
+        <span class="field-label">Member ID</span>
+        <div class="shared-input-wrapper">
+          <input type="text" id="loansMemberId" class="id-input-part" placeholder="M001">
+          <button class="load-btn-part" onclick="handleLoadMember(document.getElementById('loansMemberId').value)">Load</button>
+        </div>
+      </div>
+      <div id="loansActiveBadge" class="active-badge" style="display: none;"></div>
+
+      <div class="summary-box">
+        <div class="summary-row"><span>Loan Total:</span><span id="loanTotalVal" class="summary-val">₦0</span></div>
+        <div class="summary-row"><span>Total Paid:</span><span id="loanPaidVal" class="summary-val">₦0</span></div>
+        <div class="summary-row"><span>Balance:</span><span id="loanBalVal" class="summary-val" style="color: #ff6b6b;">₦0</span></div>
+      </div>
+
+      <div style="margin-top: 10px; background: #000018; padding: 8px; border-radius: 6px;">
+        <span style="font-size: 11px; color: #aaa; font-weight: bold;">Issue New Loan</span>
+        <div class="field-row" style="margin-top: 6px;">
+          <input type="number" id="newLoanInput" class="field-input" placeholder="Amount (₦)">
+          <button class="action-btn" style="background: #dc3545; width: 90px; margin-left: 8px;" onclick="handleAddLoan()">Add Loan</button>
+        </div>
+      </div>
+
+      <div style="margin-top: 10px; background: #000018; padding: 8px; border-radius: 6px;">
+        <span style="font-size: 11px; color: #aaa; font-weight: bold;">Record Repayment</span>
+        <div class="field-row" style="margin-top: 6px;">
+          <input type="number" id="payLoanInput" class="field-input" placeholder="Amount (₦)">
+          <button class="action-btn" style="background: #007AFF; width: 90px; margin-left: 8px;" onclick="handlePayLoan()">Pay Loan</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TAB 4: SUMMARY -->
+  <div id="tab-Summary" class="tab-content">
+    <div class="card">
+      <div class="gen-box"><div class="gen-label">TOTAL SAVED</div><div id="sumTotalSaved" class="gen-val">₦0</div></div>
+      <div class="gen-box"><div class="gen-label">TOTAL LOANS ISSUED</div><div id="sumTotalLoans" class="gen-val">₦0</div></div>
+      <div class="gen-box"><div class="gen-label">TOTAL LOANS REPAID</div><div id="sumTotalRepaid" class="gen-val">₦0</div></div>
+      <div class="gen-box"><div class="gen-label">TOTAL LOAN BALANCE</div><div id="sumTotalLoanBal" class="gen-val" style="color: #ff6b6b;">₦0</div></div>
+      <div class="gen-box"><div class="gen-label">GRAND NET BALANCE</div><div id="sumGrandNet" class="gen-val" style="color: #51cf66;">₦0</div></div>
+      <div class="gen-box" style="background: #11113a;"><div class="gen-label">TOTAL MEMBERS</div><div id="sumTotalMembers" class="gen-val">0</div></div>
+    </div>
+  </div>
+
+  <!-- NAVIGATION -->
+  <div class="tab-bar">
+    <div class="tab-item active" onclick="switchTab('Profile', this)">Profile</div>
+    <div class="tab-item" onclick="switchTab('Weekly', this)">Weekly</div>
+    <div class="tab-item" onclick="switchTab('Loans', this)">Loans</div>
+    <div class="tab-item" onclick="switchTab('Summary', this)">Summary</div>
+  </div>
+
+  <script>
+    // Database State
+    let members = [];
+    let currentWeeklyPayments = new Array(50).fill('');
+
+    // Initialize 50-Week Grid HTML
+    const gridContainer = document.getElementById('grid50');
+    for (let i = 0; i < 50; i++) {
+      gridContainer.innerHTML += `
+        <div class="grid-cell">
+          <span class="grid-label">Wk ${i + 1}</span>
+          <input type="number" class="grid-input" id="wkInput_${i}" onchange="updateGridArray(${i}, this.value)">
+        </div>
+      `;
+    }
+
+    function setStatus(msg) {
+      document.getElementById('statusBanner').innerText = "STATUS: " + msg;
+    }
+
+    function switchTab(tabName, element) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
+      document.getElementById('tab-' + tabName).classList.add('active');
+      element.classList.add('active');
+      if (tabName === 'Summary') updateGeneralSummary();
+    }
+
+    function updateGridArray(index, value) {
+      currentWeeklyPayments[index] = value;
+    }
+
+    function handleNewID() {
+      let maxId = 0;
+      members.forEach(m => {
+        if (m.id.toUpperCase().startsWith('M')) {
+          let num = parseInt(m.id.substring(1), 10);
+          if (!isNaN(num) && num > maxId) maxId = num;
+        }
+      });
+      let formattedId = `M${String(maxId + 1).padStart(3, '0')}`;
+      clearForm();
+      document.getElementById('memberId').value = formattedId;
+      setStatus(`New ID ${formattedId} generated! Enter details and click Save Member.`);
+    }
+
+    function handleSaveMember() {
+      let id = document.getElementById('memberId').value.trim();
+      let name = document.getElementById('name').value.trim();
+
+      if (!id || !name) {
+        setStatus("Error: Please provide both Member ID and Name!");
+        return;
+      }
+
+      let existingIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+      let memberData = {
+        id: id,
+        name: name,
+        age: document.getElementById('age').value,
+        phone: document.getElementById('phone').value,
+        familyTies: document.getElementById('familyTies').value,
+        status: document.getElementById('status').value,
+        loanAmount: existingIndex >= 0 ? members[existingIndex].loanAmount : 0,
+        loanPaid: existingIndex >= 0 ? members[existingIndex].loanPaid : 0,
+        weeklyPayments: existingIndex >= 0 ? members[existingIndex].weeklyPayments : [...currentWeeklyPayments]
+      };
+
+      if (existingIndex >= 0) {
+        members[existingIndex] = memberData;
+      } else {
+        members.push(memberData);
+      }
+
+      renderMemberList();
+      updateIndividualSummary(memberData);
+      setStatus(`Member ${name} (${id}) saved successfully!`);
+    }
+
+    function handleLoadMember(targetId) {
+      let id = targetId || document.getElementById('memberId').value.trim();
+      let found = members.find(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (found) {
+        document.getElementById('memberId').value = found.id;
+        document.getElementById('weeklyMemberId').value = found.id;
+        document.getElementById('loansMemberId').value = found.id;
+
+        document.getElementById('name').value = found.name;
+        document.getElementById('age').value = found.age;
+        document.getElementById('phone').value = found.phone;
+        document.getElementById('familyTies').value = found.familyTies;
+        document.getElementById('status').value = found.status;
+
+        currentWeeklyPayments = [...found.weeklyPayments];
+        for (let i = 0; i < 50; i++) {
+          document.getElementById(`wkInput_${i}`).value = currentWeeklyPayments[i] || '';
+        }
+
+        document.getElementById('weeklyActiveBadge').style.display = 'block';
+        document.getElementById('weeklyActiveBadge').innerText = "Active: " + found.name;
+        document.getElementById('loansActiveBadge').style.display = 'block';
+        document.getElementById('loansActiveBadge').innerText = "Member: " + found.name;
+
+        updateIndividualSummary(found);
+        setStatus(`Profile loaded for ${found.name}`);
+      } else {
+        setStatus(`No member recorded with ID: ${id}`);
+      }
+    }
+
+    function handleSavePayments() {
+      let id = document.getElementById('weeklyMemberId').value.trim();
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0) {
+        setStatus("Error: Member ID not found. Register member first!");
+        return;
+      }
+
+      members[foundIndex].weeklyPayments = [...currentWeeklyPayments];
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`Weekly contributions saved for ${members[foundIndex].name}!`);
+    }
+
+    function handleAddLoan() {
+      let id = document.getElementById('loansMemberId').value.trim();
+      let amount = parseFloat(document.getElementById('newLoanInput').value);
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0 || isNaN(amount) || amount <= 0) {
+        setStatus("Error: Select a valid member and enter a valid loan amount!");
+        return;
+      }
+
+      members[foundIndex].loanAmount += amount;
+      document.getElementById('newLoanInput').value = '';
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`₦${amount.toLocaleString()} added to loan balance!`);
+    }
+
+    function handlePayLoan() {
+      let id = document.getElementById('loansMemberId').value.trim();
+      let payment = parseFloat(document.getElementById('payLoanInput').value);
+      let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
+
+      if (foundIndex < 0 || isNaN(payment) || payment <= 0) {
+        setStatus("Error: Select a valid member and enter a valid repayment amount!");
+        return;
+      }
+
+      members[foundIndex].loanPaid += payment;
+      document.getElementById('payLoanInput').value = '';
+      updateIndividualSummary(members[foundIndex]);
+      setStatus(`₦${payment.toLocaleString()} recorded as loan payment!`);
+    }
+
+    function updateIndividualSummary(m) {
+      let saved = m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
+      let weeks = m.weeklyPayments.filter(v => parseFloat(v) > 0).length;
+      let loanBal = m.loanAmount - m.loanPaid;
+      let net = saved - loanBal;
+
+      document.getElementById('profWeeksPaid').innerText = weeks;
+      document.getElementById('profAmountSaved').innerText = "₦" + saved.toLocaleString();
+      document.getElementById('profLoanAmount').innerText = "₦" + m.loanAmount.toLocaleString();
+      document.getElementById('profLoanPaid').innerText = "₦" + m.loanPaid.toLocaleString();
+      document.getElementById('profLoanBalance').innerText = "₦" + loanBal.toLocaleString();
+      document.getElementById('profNetBalance').innerText = "₦" + net.toLocaleString();
+
+      document.getElementById('loanTotalVal').innerText = "₦" + m.loanAmount.toLocaleString();
+      document.getElementById('loanPaidVal').innerText = "₦" + m.loanPaid.toLocaleString();
+      document.getElementById('loanBalVal').innerText = "₦" + loanBal.toLocaleString();
+    }
+
+    function updateGeneralSummary() {
+      let totalSaved = 0, totalLoans = 0, totalPaid = 0;
+
+      members.forEach(m => {
+        totalSaved += m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
+        totalLoans += m.loanAmount;
+        totalPaid += m.loanPaid;
+      });
+
+      let totalLoanBal = totalLoans - totalPaid;
+      let grandNet = totalSaved - totalLoanBal;
+
+      document.getElementById('sumTotalSaved').innerText = "₦" + totalSaved.toLocaleString();
+      document.getElementById('sumTotalLoans').innerText = "₦" + totalLoans.toLocaleString();
+      document.getElementById('sumTotalRepaid').innerText = "₦" + totalPaid.toLocaleString();
+      document.getElementById('sumTotalLoanBal').innerText = "₦" + totalLoanBal.toLocaleString();
+      document.getElementById('sumGrandNet').innerText = "₦" + grandNet.toLocaleString();
+      document.getElementById('sumTotalMembers').innerText = members.length;
+    }
+
+    function renderMemberList() {
+      let container = document.getElementById('memberListContainer');
+      container.innerHTML = `<span style="font-size: 11px; font-weight: bold; color: #aaa;">Registered Members (${members.length})</span>`;
+      members.forEach(m => {
+        container.innerHTML += `
+          <div class="member-item" onclick="handleLoadMember('${m.id}')">
+            <span style="color: #ffd700; font-weight: bold;">${m.id}</span>
+            <span>${m.name}</span>
+            <span style="color: #007AFF; font-weight: bold;">Load</span>
+          </div>
+        `;
+      });
+    }
+
+    function clearForm() {
+      document.getElementById('memberId').value = '';
+      document.getElementById('name').value = '';
+      document.getElementById('age').value = '';
+      document.getElementById('phone').value = '';
+      document.getElementById('familyTies').value = '';
+      document.getElementById('status').value = '';
+      currentWeeklyPayments = new Array(50).fill('');
+      for (let i = 0; i < 50; i++) {
+        document.getElementById(`wkInput_${i}`).value = '';
+      }
+    }
+  </script>
+</body>
+                                                                                                         </html>
+  
