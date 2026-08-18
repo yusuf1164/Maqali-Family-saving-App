@@ -8,12 +8,17 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
     body { background-color: #000040; color: #fff; padding: 10px; padding-bottom: 70px; }
     
-    .status-banner { background: #111155; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #333; text-align: center; color: #ffd700; font-size: 11px; font-weight: bold; }
+    .top-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .role-badge { font-size: 11px; font-weight: bold; padding: 4px 8px; border-radius: 4px; background: #333366; }
+    .login-btn { background: #007AFF; color: #fff; border: none; border-radius: 4px; padding: 4px 10px; font-size: 11px; font-weight: bold; cursor: pointer; }
+    
+    .status-banner { background: #111155; padding: 8px; margin-bottom: 10px; border-radius: 4px; border: 1px solid #333; text-align: center; color: #ffd700; font-size: 11px; font-weight: bold; min-height: 32px; display: flex; align-items: center; justify-content: center; }
     .card { background: #000028; border-radius: 8px; padding: 12px; border: 1px solid #333; }
     
     .field-row { display: flex; align-items: center; margin-bottom: 8px; }
     .field-label { width: 90px; font-size: 11px; font-weight: bold; }
     .field-input { flex: 1; background: #333366; color: #fff; border: none; border-radius: 4px; padding: 6px 8px; height: 34px; font-size: 12px; }
+    .field-input:disabled { opacity: 0.5; cursor: not-allowed; }
     
     .shared-input-wrapper { flex: 1; display: flex; height: 34px; }
     .id-input-part { flex: 1; background: #333366; color: #fff; border: none; border-top-left-radius: 4px; border-bottom-left-radius: 4px; padding: 6px 8px; font-size: 12px; }
@@ -21,6 +26,7 @@
     
     .btn-row { display: flex; gap: 8px; margin: 10px 0; }
     .action-btn { flex: 1; background: #007AFF; color: #fff; border: none; border-radius: 4px; height: 34px; font-weight: bold; font-size: 11px; cursor: pointer; }
+    .action-btn:disabled { opacity: 0.4; cursor: not-allowed; }
     .save-btn { background: #28a745; }
     
     .summary-box { background: #000015; border-radius: 6px; padding: 10px; margin-top: 8px; }
@@ -33,15 +39,22 @@
     .grid-cell { width: 18%; display: flex; flex-direction: column; align-items: center; margin-bottom: 6px; }
     .grid-label { font-size: 9px; color: #aaa; margin-bottom: 2px; }
     .grid-input { width: 100%; text-align: center; height: 28px; font-size: 10px; background: #333366; color: #fff; border: 1px solid #444; border-radius: 4px; }
+    .grid-input:disabled { opacity: 0.5; }
     
-    .member-item { display: flex; justify-content: space-between; background: #111144; padding: 8px; border-radius: 4px; margin-bottom: 4px; font-size: 11px; cursor: pointer; }
+    .filter-row { display: flex; gap: 6px; margin-bottom: 12px; }
+    .filter-btn { flex: 1; background: #222255; color: #aaa; border: 1px solid #444; border-radius: 4px; padding: 6px 0; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .filter-btn.active { background: #007AFF; color: #fff; border-color: #007AFF; }
+    
+    .member-card { background: #000018; border: 1px solid #222255; border-radius: 6px; padding: 10px; margin-bottom: 8px; }
+    .member-card-header { display: flex; justify-content: space-between; margin-bottom: 6px; border-bottom: 1px solid #222244; padding-bottom: 4px; }
+    .member-card-body { font-size: 11px; color: #ccc; display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
     
     .gen-box { background: #000010; border-radius: 4px; padding: 10px; margin-bottom: 8px; text-align: center; }
     .gen-label { font-size: 10px; color: #aaa; font-weight: bold; margin-bottom: 2px; }
     .gen-val { font-size: 16px; font-weight: bold; }
     
     .tab-bar { position: fixed; bottom: 0; left: 0; right: 0; display: flex; background: #00001a; border-top: 1px solid #333; height: 50px; }
-    .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #888; font-size: 11px; font-weight: bold; cursor: pointer; }
+    .tab-item { flex: 1; display: flex; justify-content: center; align-items: center; color: #888; font-size: 10px; font-weight: bold; cursor: pointer; text-align: center; }
     .tab-item.active { color: #007AFF; border-top: 2px solid #007AFF; background: #000030; }
     
     .tab-content { display: none; }
@@ -49,6 +62,12 @@
   </style>
 </head>
 <body>
+
+  <!-- TOP AUTH BAR -->
+  <div class="top-bar">
+    <span class="role-badge" id="roleBadge">Role: Viewer (Read-Only)</span>
+    <button class="login-btn" id="loginBtn" onclick="toggleAuth()">Editor Login</button>
+  </div>
 
   <div class="status-banner" id="statusBanner">STATUS: System Ready. Select an action.</div>
 
@@ -62,15 +81,21 @@
           <button class="load-btn-part" onclick="handleLoadMember()">Load</button>
         </div>
       </div>
-      <div class="field-row"><span class="field-label">Name</span><input type="text" id="name" class="field-input" placeholder="Full Name"></div>
-      <div class="field-row"><span class="field-label">Age</span><input type="number" id="age" class="field-input" placeholder="Age"></div>
-      <div class="field-row"><span class="field-label">Phone</span><input type="tel" id="phone" class="field-input" placeholder="Phone"></div>
-      <div class="field-row"><span class="field-label">Family Ties</span><input type="text" id="familyTies" class="field-input" placeholder="Ties"></div>
-      <div class="field-row"><span class="field-label">Status</span><input type="text" id="status" class="field-input" placeholder="Active/Inactive"></div>
+      <div class="field-row"><span class="field-label">Name</span><input type="text" id="name" class="field-input editor-only" placeholder="Full Name"></div>
+      <div class="field-row"><span class="field-label">Age</span><input type="number" id="age" class="field-input editor-only" placeholder="Age"></div>
+      <div class="field-row"><span class="field-label">Phone</span><input type="tel" id="phone" class="field-input editor-only" placeholder="Phone"></div>
+      <div class="field-row"><span class="field-label">Family Ties</span><input type="text" id="familyTies" class="field-input editor-only" placeholder="Ties"></div>
+      <div class="field-row">
+        <span class="field-label">Status</span>
+        <select id="status" class="field-input editor-only">
+          <option value="Active">Active</option>
+          <option value="Inactive">Inactive</option>
+        </select>
+      </div>
 
       <div class="btn-row">
-        <button class="action-btn" onclick="handleNewID()">New ID</button>
-        <button class="action-btn save-btn" onclick="handleSaveMember()">Save Member</button>
+        <button class="action-btn editor-only" onclick="handleNewID()">New ID</button>
+        <button class="action-btn save-btn editor-only" onclick="handleSaveMember()">Save Member</button>
       </div>
 
       <div class="summary-box">
@@ -81,8 +106,6 @@
         <div class="summary-row"><span>Loan Balance:</span><span id="profLoanBalance" class="summary-val" style="color: #ff6b6b;">₦0</span></div>
         <div class="summary-row"><span>Net Balance:</span><span id="profNetBalance" class="summary-val" style="color: #51cf66;">₦0</span></div>
       </div>
-
-      <div style="margin-top: 15px;" id="memberListContainer"></div>
     </div>
   </div>
 
@@ -98,7 +121,7 @@
       </div>
       <div id="weeklyActiveBadge" class="active-badge" style="display: none;"></div>
       <div class="grid-container" id="grid50"></div>
-      <button class="action-btn save-btn" style="width: 100%; margin-top: 12px;" onclick="handleSavePayments()">Save Payments</button>
+      <button class="action-btn save-btn editor-only" style="width: 100%; margin-top: 12px;" onclick="handleSavePayments()">Save Payments</button>
     </div>
   </div>
 
@@ -123,22 +146,34 @@
       <div style="margin-top: 10px; background: #000018; padding: 8px; border-radius: 6px;">
         <span style="font-size: 11px; color: #aaa; font-weight: bold;">Issue New Loan</span>
         <div class="field-row" style="margin-top: 6px;">
-          <input type="number" id="newLoanInput" class="field-input" placeholder="Amount (₦)">
-          <button class="action-btn" style="background: #dc3545; width: 90px; margin-left: 8px;" onclick="handleAddLoan()">Add Loan</button>
+          <input type="number" id="newLoanInput" class="field-input editor-only" placeholder="Amount (₦)">
+          <button class="action-btn editor-only" style="background: #dc3545; width: 90px; margin-left: 8px;" onclick="handleAddLoan()">Add Loan</button>
         </div>
       </div>
 
       <div style="margin-top: 10px; background: #000018; padding: 8px; border-radius: 6px;">
         <span style="font-size: 11px; color: #aaa; font-weight: bold;">Record Repayment</span>
         <div class="field-row" style="margin-top: 6px;">
-          <input type="number" id="payLoanInput" class="field-input" placeholder="Amount (₦)">
-          <button class="action-btn" style="background: #007AFF; width: 90px; margin-left: 8px;" onclick="handlePayLoan()">Pay Loan</button>
+          <input type="number" id="payLoanInput" class="field-input editor-only" placeholder="Amount (₦)">
+          <button class="action-btn editor-only" style="background: #007AFF; width: 90px; margin-left: 8px;" onclick="handlePayLoan()">Pay Loan</button>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- TAB 4: SUMMARY -->
+  <!-- TAB 4: MEMBERS LIST -->
+  <div id="tab-Members" class="tab-content">
+    <div class="card">
+      <div class="filter-row">
+        <button class="filter-btn active" id="filterAll" onclick="setMemberFilter('All')">All</button>
+        <button class="filter-btn" id="filterActive" onclick="setMemberFilter('Active')">Active</button>
+        <button class="filter-btn" id="filterInactive" onclick="setMemberFilter('Inactive')">Inactive</button>
+      </div>
+      <div id="membersListContainer"></div>
+    </div>
+  </div>
+
+  <!-- TAB 5: SUMMARY -->
   <div id="tab-Summary" class="tab-content">
     <div class="card">
       <div class="gen-box"><div class="gen-label">TOTAL SAVED</div><div id="sumTotalSaved" class="gen-val">₦0</div></div>
@@ -155,27 +190,70 @@
     <div class="tab-item active" onclick="switchTab('Profile', this)">Profile</div>
     <div class="tab-item" onclick="switchTab('Weekly', this)">Weekly</div>
     <div class="tab-item" onclick="switchTab('Loans', this)">Loans</div>
+    <div class="tab-item" onclick="switchTab('Members', this)">Members</div>
     <div class="tab-item" onclick="switchTab('Summary', this)">Summary</div>
   </div>
 
   <script>
-    // Database State
+    // System State
     let members = [];
     let currentWeeklyPayments = new Array(50).fill('');
+    let statusTimer = null;
+    let isEditor = false;
+    const EDITOR_PIN = "1234"; // Default editor PIN
+    let activeFilter = 'All';
 
-    // Initialize 50-Week Grid HTML
+    // Build 50-Week Grid
     const gridContainer = document.getElementById('grid50');
     for (let i = 0; i < 50; i++) {
       gridContainer.innerHTML += `
         <div class="grid-cell">
           <span class="grid-label">Wk ${i + 1}</span>
-          <input type="number" class="grid-input" id="wkInput_${i}" onchange="updateGridArray(${i}, this.value)">
+          <input type="number" class="grid-input editor-only" id="wkInput_${i}" onchange="updateGridArray(${i}, this.value)">
         </div>
       `;
     }
 
+    // Auth & Permission Management
+    function toggleAuth() {
+      if (isEditor) {
+        isEditor = false;
+        setStatus("Logged out. Switched to Viewer mode.");
+      } else {
+        let pin = prompt("Enter Editor Access PIN:");
+        if (pin === EDITOR_PIN) {
+          isEditor = true;
+          setStatus("Access granted! Editor mode active.");
+        } else if (pin !== null) {
+          setStatus("Incorrect PIN! Access denied.");
+        }
+      }
+      updatePermissionUI();
+    }
+
+    function updatePermissionUI() {
+      document.getElementById('roleBadge').innerText = isEditor ? "Role: Editor (Full Access)" : "Role: Viewer (Read-Only)";
+      document.getElementById('roleBadge').style.background = isEditor ? "#28a745" : "#333366";
+      document.getElementById('loginBtn').innerText = isEditor ? "Logout" : "Editor Login";
+
+      document.querySelectorAll('.editor-only').forEach(el => {
+        if (el.tagName === 'BUTTON') {
+          el.disabled = !isEditor;
+        } else if (el.tagName === 'INPUT' || el.tagName === 'SELECT') {
+          el.disabled = !isEditor;
+        }
+      });
+    }
+
+    // Auto-clearing Status Banner (5 seconds)
     function setStatus(msg) {
-      document.getElementById('statusBanner').innerText = "STATUS: " + msg;
+      const banner = document.getElementById('statusBanner');
+      banner.innerText = "STATUS: " + msg;
+      
+      if (statusTimer) clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => {
+        banner.innerText = "STATUS: System Ready. Select an action.";
+      }, 5000);
     }
 
     function switchTab(tabName, element) {
@@ -183,6 +261,8 @@
       document.querySelectorAll('.tab-item').forEach(el => el.classList.remove('active'));
       document.getElementById('tab-' + tabName).classList.add('active');
       element.classList.add('active');
+      
+      if (tabName === 'Members') renderMembersTab();
       if (tabName === 'Summary') updateGeneralSummary();
     }
 
@@ -191,6 +271,7 @@
     }
 
     function handleNewID() {
+      if (!isEditor) return;
       let maxId = 0;
       members.forEach(m => {
         if (m.id.toUpperCase().startsWith('M')) {
@@ -205,6 +286,7 @@
     }
 
     function handleSaveMember() {
+      if (!isEditor) return;
       let id = document.getElementById('memberId').value.trim();
       let name = document.getElementById('name').value.trim();
 
@@ -220,7 +302,7 @@
         age: document.getElementById('age').value,
         phone: document.getElementById('phone').value,
         familyTies: document.getElementById('familyTies').value,
-        status: document.getElementById('status').value,
+        status: document.getElementById('status').value || 'Active',
         loanAmount: existingIndex >= 0 ? members[existingIndex].loanAmount : 0,
         loanPaid: existingIndex >= 0 ? members[existingIndex].loanPaid : 0,
         weeklyPayments: existingIndex >= 0 ? members[existingIndex].weeklyPayments : [...currentWeeklyPayments]
@@ -232,9 +314,8 @@
         members.push(memberData);
       }
 
-      renderMemberList();
-      updateIndividualSummary(memberData);
       setStatus(`Member ${name} (${id}) saved successfully!`);
+      clearForm(); // Clear fields after saving
     }
 
     function handleLoadMember(targetId) {
@@ -270,6 +351,7 @@
     }
 
     function handleSavePayments() {
+      if (!isEditor) return;
       let id = document.getElementById('weeklyMemberId').value.trim();
       let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
 
@@ -284,6 +366,7 @@
     }
 
     function handleAddLoan() {
+      if (!isEditor) return;
       let id = document.getElementById('loansMemberId').value.trim();
       let amount = parseFloat(document.getElementById('newLoanInput').value);
       let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
@@ -300,6 +383,7 @@
     }
 
     function handlePayLoan() {
+      if (!isEditor) return;
       let id = document.getElementById('loansMemberId').value.trim();
       let payment = parseFloat(document.getElementById('payLoanInput').value);
       let foundIndex = members.findIndex(m => m.id.toUpperCase() === id.toUpperCase());
@@ -333,6 +417,53 @@
       document.getElementById('loanBalVal').innerText = "₦" + loanBal.toLocaleString();
     }
 
+    function setMemberFilter(filter) {
+      activeFilter = filter;
+      document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+      document.getElementById('filter' + filter).classList.add('active');
+      renderMembersTab();
+    }
+
+    function renderMembersTab() {
+      let container = document.getElementById('membersListContainer');
+      let filtered = members.filter(m => {
+        if (activeFilter === 'Active') return m.status === 'Active';
+        if (activeFilter === 'Inactive') return m.status === 'Inactive';
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        container.innerHTML = `<div style="text-align: center; color: #888; padding: 20px 0; font-size: 12px;">No members found under standard '${activeFilter}' filter.</div>`;
+        return;
+      }
+
+      container.innerHTML = filtered.map(m => {
+        let saved = m.weeklyPayments.reduce((acc, v) => acc + (parseFloat(v) || 0), 0);
+        let loanBal = m.loanAmount - m.loanPaid;
+        let statusColor = m.status === 'Active' ? '#51cf66' : '#ff6b6b';
+
+        return `
+          <div class="member-card" onclick="selectMemberFromList('${m.id}')">
+            <div class="member-card-header">
+              <span style="color: #ffd700; font-weight: bold;">${m.id} - ${m.name}</span>
+              <span style="color: ${statusColor}; font-weight: bold; font-size: 10px;">${m.status}</span>
+            </div>
+            <div class="member-card-body">
+              <div>Phone: ${m.phone || 'N/A'}</div>
+              <div>Ties: ${m.familyTies || 'N/A'}</div>
+              <div>Saved: <b style="color: #51cf66;">₦${saved.toLocaleString()}</b></div>
+              <div>Loan Bal: <b style="color: #ff6b6b;">₦${loanBal.toLocaleString()}</b></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectMemberFromList(id) {
+      handleLoadMember(id);
+      switchTab('Profile', document.querySelectorAll('.tab-item')[0]);
+    }
+
     function updateGeneralSummary() {
       let totalSaved = 0, totalLoans = 0, totalPaid = 0;
 
@@ -353,33 +484,23 @@
       document.getElementById('sumTotalMembers').innerText = members.length;
     }
 
-    function renderMemberList() {
-      let container = document.getElementById('memberListContainer');
-      container.innerHTML = `<span style="font-size: 11px; font-weight: bold; color: #aaa;">Registered Members (${members.length})</span>`;
-      members.forEach(m => {
-        container.innerHTML += `
-          <div class="member-item" onclick="handleLoadMember('${m.id}')">
-            <span style="color: #ffd700; font-weight: bold;">${m.id}</span>
-            <span>${m.name}</span>
-            <span style="color: #007AFF; font-weight: bold;">Load</span>
-          </div>
-        `;
-      });
-    }
-
     function clearForm() {
       document.getElementById('memberId').value = '';
       document.getElementById('name').value = '';
       document.getElementById('age').value = '';
       document.getElementById('phone').value = '';
       document.getElementById('familyTies').value = '';
-      document.getElementById('status').value = '';
+      document.getElementById('status').value = 'Active';
       currentWeeklyPayments = new Array(50).fill('');
       for (let i = 0; i < 50; i++) {
         document.getElementById(`wkInput_${i}`).value = '';
       }
+      document.getElementById('weeklyActiveBadge').style.display = 'none';
+      document.getElementById('loansActiveBadge').style.display = 'none';
     }
+
+    // Initialize Permissions on Load
+    updatePermissionUI();
   </script>
 </body>
-                                                                                                         </html>
-  
+</html>
